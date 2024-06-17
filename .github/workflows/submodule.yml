@@ -1,0 +1,31 @@
+name: Update repositories where this repository is used as Git submodule.
+
+"on":
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  kysrpex_usegalaxy-eu-ansible:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: kysrpex/usegalaxy-eu-ansible
+          ref: test_updating_single_submodule
+          ssh-key: ${{ secrets.KYSRPEX_USEGALAXY_EU_ANSIBLE_DEPLOY_KEY }}
+          submodules: false
+
+      - name: Update submodules.
+        run: |
+          git submodule update --init --force --recursive --remote files/grafana
+
+      - name: Commit updates
+        run: |
+          set -e
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add files/grafana
+          git commit -m "Update submodule files/grafana" || echo "Submodule files/grafana is already up to date"
+          git push
